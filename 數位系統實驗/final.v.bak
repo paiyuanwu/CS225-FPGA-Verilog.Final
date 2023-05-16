@@ -1,0 +1,61 @@
+module final(Mode,Clk,speed,light1,light2,Out,oClk);
+    input [1:0]Mode;
+    input Clk;
+    input[1:0]speed;
+    output [9:0]Out;
+    output [0:7]light1;
+    output [0:7]light2;
+    output oClk;
+    reg oClk;
+    reg [9:0]Out;
+    reg step;
+ reg [25:0] N = 5000000;
+ reg [25:0] cnt_p;
+ always@(posedge Clk) begin
+	case(speed)
+	0:N=50000000;
+	1:N=25000000;
+	2:N=10000000;
+	3:N=5000000;
+	endcase
+	case(speed)
+	0:light1=8'b11001111;
+	1:light1=8'b10010010;
+	2:light1=8'b10000110;
+	3:light1=8'b11001100;
+	endcase
+end
+ always@(posedge Clk) begin
+   if (cnt_p >= (N-1))
+     cnt_p = 0;
+   else
+     cnt_p = cnt_p + 1;
+ end
+ always@(posedge Clk) begin
+   if (cnt_p < (N>>1))
+     oClk = 1;
+   else
+     oClk = 0;
+ end
+always @(posedge oClk)
+        begin
+            case(Mode)
+            0:
+            begin
+                if(Out==10'b1111111111)step=0;
+                if(!Out)step=1;
+                Out={step,Out[9:1]};
+            end
+            1:Out=10'b1111111111;
+            2:Out=~Out;
+            3:Out={Out[8:0],Out[9]};
+            endcase
+            case(Mode)
+		0:light2=8'b11001111;
+		1:light2=8'b10010010;
+		2:light2=8'b10000110;
+		3:light2=8'b11001100;
+		endcase
+        end
+        
+endmodule 
